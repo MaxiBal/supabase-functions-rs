@@ -1,5 +1,3 @@
-use std::future::Future;
-
 use builder::Builder;
 use functions::{Function, FunctionResponse};
 use reqwest::Error;
@@ -7,7 +5,6 @@ use serde::de::DeserializeOwned;
 
 mod builder;
 pub mod functions;
-mod exceptions;
 
 pub struct Client
 {
