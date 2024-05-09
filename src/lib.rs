@@ -3,6 +3,7 @@ use std::future::Future;
 use builder::Builder;
 use functions::{Function, FunctionResponse};
 use reqwest::Error;
+use serde::de::DeserializeOwned;
 
 mod builder;
 pub mod functions;
@@ -28,47 +29,63 @@ impl Client
        self
     }
 
-    pub fn call<T>(self, function_name: T) -> impl Future<Output = Result<reqwest::Response, reqwest::Error>> where T :Into<String> 
+    async fn process_http_request<U>(self, res: Result<reqwest::Response, reqwest::Error>) 
+        -> Result<FunctionResponse<U>, Error> where U : DeserializeOwned
     {
-        Function::new(function_name).call(&self.builder)
-    }
-
-    pub async fn call_with_body<T, U>(self, function_name: T, function_data: &str) 
-        -> Result<FunctionResponse<U>, Error> 
-        where T :Into<String>, U : serde::de::DeserializeOwned
-    {
-        let mut func = Function::new(function_name);
-        func.body(function_data);
-        let res: Result<reqwest::Response, reqwest::Error> = func.call(&self.builder).await;
         match res
         {
-            Ok(response) => {
+           Ok(response) => {
 
-                let status_code: u16 = response.status().as_u16();
-                let response_text: String = response.text().await?;
+               let status_code: u16 = response.status().as_u16();
+               let response_text: String = response.text().await?;
 
-                let deserialized_obj : Result<U, serde_json::Error> = serde_json::from_str::<U>(&response_text);
+               let deserialized_obj : Result<U, serde_json::Error> = serde_json::from_str::<U>(&response_text);
 
-                match deserialized_obj
-                {
-                    Ok(obj) => {
-                        Ok(FunctionResponse{
-                            status: status_code,
-                            content: obj
-                        })
-                    },
-                    Err(err) =>
-                    {
-                        panic!("Could not deserialize object, err: {}", err);
-                    }
-                }
+               match deserialized_obj
+               {
+                   Ok(obj) => {
+                       Ok(FunctionResponse{
+                           status: status_code,
+                           content: obj
+                       })
+                   },
+                   Err(err) =>
+                   {
+                    
+                       panic!("Could not deserialize object, err: {}.  Response text was: {}", err, response_text);
+                       
+                   }
+               }
 
-                
-            },
-            Err(err ) => {
-                Err(err)
-            }
-        }
+               
+           },
+           Err(err ) => {
+               Err(err)
+           }
+       }
+    }
+
+    pub async fn call<T, U>(self, function_name: T) -> Result<FunctionResponse<U>, Error> where T :Into<String>, U : DeserializeOwned
+    {
+       let res = Function::new(function_name).call(&self.builder).await;
+
+       self.process_http_request(res).await
+       
+    }
+
+    pub async fn call_with_body<T, U, V>(self, function_name: T, function_data: V) 
+        -> Result<FunctionResponse<U>, Error> 
+        where T :Into<String>, U : serde::de::DeserializeOwned, V : serde::ser::Serialize
+    {
+        let mut func = Function::new(function_name);
+
+        let func_body = &serde_json::to_value(function_data).unwrap_or_default().to_string();
+
+        func.body(func_body);
+
+        let res: Result<reqwest::Response, reqwest::Error> = func.call(&self.builder).await;
+
+        self.process_http_request(res).await
     }
 }
 

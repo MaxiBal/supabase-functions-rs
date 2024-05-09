@@ -23,7 +23,7 @@ async fn get_hello_res()
     let req: HelloRequest = HelloRequest{name: String::from("Function")};
     
     let f: functions::FunctionResponse<HelloMessage> = 
-        c.call_with_body("hello", &serde_json::to_value(req).unwrap().to_string()).await.unwrap();
+        c.call_with_body("hello", req).await.unwrap();
 
     println!("Status Code: {}, Message: {}", f.status, f.content.message);
 
