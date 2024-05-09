@@ -5,13 +5,15 @@ use functions::{Function, FunctionResponse};
 use reqwest::Error;
 
 mod builder;
-mod functions;
+pub mod functions;
 mod exceptions;
 
 pub struct Client
 {
     builder: Builder,
 }
+
+
 
 impl Client
 {
@@ -31,7 +33,9 @@ impl Client
         Function::new(function_name).call(&self.builder)
     }
 
-    pub async fn call_with_body<'a, T, U>(self, function_name: T, function_data: &str) -> Result<FunctionResponse<U>, Error> where T :Into<String>, U : serde::de::Deserialize<'a>
+    pub async fn call_with_body<T, U>(self, function_name: T, function_data: &str) 
+        -> Result<FunctionResponse<U>, Error> 
+        where T :Into<String>, U : serde::de::DeserializeOwned
     {
         let mut func = Function::new(function_name);
         func.body(function_data);
@@ -39,13 +43,29 @@ impl Client
         match res
         {
             Ok(response) => {
-                
-                let response_text = response.text().await.unwrap();
 
-                Ok(FunctionResponse{
-                    status: response.status().as_u16(),
-                    content: serde_json::from_str(response_text.as_str()).unwrap()
-                })
+                let status_code: u16 = response.status().as_u16();
+                let response_text: String = response.text().await?;
+
+                println!("Recieved response message: {}", response_text);
+
+                let deserialized_obj : Result<U, serde_json::Error> = serde_json::from_str::<U>(&response_text);
+
+                match deserialized_obj
+                {
+                    Ok(obj) => {
+                        Ok(FunctionResponse{
+                            status: status_code,
+                            content: obj
+                        })
+                    },
+                    Err(err) =>
+                    {
+                        panic!("Could not deserialize object, err: {}", err);
+                    }
+                }
+
+                
             },
             Err(err ) => {
                 Err(err)
