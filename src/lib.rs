@@ -47,8 +47,6 @@ impl Client
                 let status_code: u16 = response.status().as_u16();
                 let response_text: String = response.text().await?;
 
-                println!("Recieved response message: {}", response_text);
-
                 let deserialized_obj : Result<U, serde_json::Error> = serde_json::from_str::<U>(&response_text);
 
                 match deserialized_obj

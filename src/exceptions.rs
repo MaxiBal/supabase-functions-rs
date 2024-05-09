@@ -12,7 +12,7 @@ pub struct FunctionError
 impl Display for FunctionError
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        write!(f, "Calling function gave error")
+        write!(f, "Calling function \"{}\" gave error code: {}", self.function_name, self.http_status)
     }
 }
 
