@@ -48,9 +48,7 @@ impl Client
                    },
                    Err(err) =>
                    {
-                    
-                       panic!("Could not deserialize object, err: {}.  Response text was: {}", err, response_text);
-                       
+                       panic!("Could not deserialize object, err: {}.", err);
                    }
                }
 
