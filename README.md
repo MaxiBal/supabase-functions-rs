@@ -1,4 +1,4 @@
-# functions-rs
+# supabase-functions-rs
 
 Strongly typed client library for Supabase edge functions in rust.
 
