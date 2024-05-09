@@ -1,6 +1,6 @@
 # functions-rs
 
-Strongly typed client library for supabase edge functions in rust.
+Strongly typed client library for Supabase edge functions in rust.
 
 ## Usage
 
