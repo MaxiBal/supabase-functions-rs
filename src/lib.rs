@@ -6,12 +6,11 @@ use serde::de::DeserializeOwned;
 mod builder;
 pub mod functions;
 
+#[derive(Debug)]
 pub struct Client
 {
     builder: Builder,
 }
-
-
 
 impl Client
 {
@@ -38,6 +37,11 @@ impl Client
     ///
     /// Processes an http request and returns a FunctionResponse<U>
     /// 
+    /// # Errors
+    /// This function returns an error if the http request results in an error.
+    /// 
+    /// # Panics
+    /// This function panics when it is unable to parse the response into the type provided.
     /// 
     async fn process_http_request<U>(self, res: Result<reqwest::Response, reqwest::Error>) 
         -> Result<FunctionResponse<U>, Error> where U : DeserializeOwned
@@ -49,23 +53,12 @@ impl Client
                let status_code: u16 = response.status().as_u16();
                let response_text: String = response.text().await?;
 
-               let deserialized_obj : Result<U, serde_json::Error> = serde_json::from_str::<U>(&response_text);
+               let deserialized_obj : U = serde_json::from_str::<U>(&response_text).expect("Could not parse response into type provided.");
 
-               match deserialized_obj
-               {
-                   Ok(obj) => {
-                       Ok(FunctionResponse{
-                           status: status_code,
-                           content: obj
-                       })
-                   },
-                   Err(err) =>
-                   {
-                       panic!("Could not deserialize object, err: {}.", err);
-                   }
-               }
-
-               
+                Ok(FunctionResponse{
+                    status: status_code,
+                    content: deserialized_obj
+                })
            },
            Err(err ) => {
                Err(err)
@@ -75,7 +68,13 @@ impl Client
 
     /// Calls a Supabase function with an empty request body
     /// 
-    /// ## Example
+    /// # Errors
+    /// This function returns an error if the http request results in an error.
+    /// 
+    /// # Panics
+    /// This function panics when it is unable to parse the response into the type provided.
+    /// 
+    /// # Example
     /// ```rs
     /// #[derive(serde::Deserialize)]
     /// struct HelloResponse
@@ -95,7 +94,13 @@ impl Client
 
     /// Calls a Supabase function with a request body
     /// 
-    /// ## Example
+    /// # Errors
+    /// This function returns an error if the http request results in an error.
+    /// 
+    /// # Panics
+    /// This function panics when it is unable to parse the response into the type provided.
+    /// 
+    /// # Example
     /// ```rs
     /// #[derive(serde::Serialize)]
     /// struct HelloRequest

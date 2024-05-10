@@ -16,6 +16,7 @@ struct FunctionOptions
     pub method: Method,
 }
 
+#[derive(Debug)]
 pub struct FunctionResponse<T>
 {
     pub status: u16,

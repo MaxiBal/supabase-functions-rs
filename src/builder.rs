@@ -3,6 +3,7 @@ use reqwest::{
 };
 
 
+#[derive(Debug)]
 pub struct Builder 
 {
     pub baseurl: String,
