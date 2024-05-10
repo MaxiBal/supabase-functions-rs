@@ -1,5 +1,9 @@
 [package]
 name = "functions-rs"
+description = "A strongly typed client for Supabase edge functions"
+readme = "README.md"
+license = "MIT"
+license-file = "LICENSE.md"
 version = "0.1.0"
 edition = "2021"
 authors = ["Maxim Balabanski"]
