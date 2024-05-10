@@ -27,7 +27,7 @@ struct HelloResponse
 
 ...
 
-let response: FunctionResponse<HelloResponse> = client.call("hello").await.unwrap();
+let response: FunctionResponse<HelloResponse> = client.call("hello").await?;
 
 println!("{}", response.content.message);
 ```
@@ -54,7 +54,7 @@ struct HelloResponse
 
 let request = HelloRequest{name: String::from("World")};
 
-let response: FunctionResponse<HelloResponse> = client.call_with_body("hello", request).await.unwrap();
+let response: FunctionResponse<HelloResponse> = client.call_with_body("hello", request).await?;
 
 println!("{}", response.content.message);
 ```
