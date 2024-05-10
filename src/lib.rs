@@ -82,7 +82,7 @@ impl Client
     ///     message: String
     /// }
     /// ...
-    /// let response: FunctionResponse<HelloResponse> = client.call("hello").await.unwrap();
+    /// let response: FunctionResponse<HelloResponse> = client.call("hello").await?;
     /// ```
     pub async fn call<T, U>(self, function_name: T) -> Result<FunctionResponse<U>, Error> where T :Into<String>, U : DeserializeOwned
     {
@@ -110,7 +110,7 @@ impl Client
     /// 
     /// let request = HelloRequest{name: String::from("World")};
     /// 
-    /// let f: functions::FunctionResponse<HelloMessage> = c.call_with_body("hello", req).await.unwrap();
+    /// let f: functions::FunctionResponse<HelloMessage> = c.call_with_body("hello", req).await?;
     /// ```
     pub async fn call_with_body<T, U, V>(self, function_name: T, function_data: V) 
         -> Result<FunctionResponse<U>, Error> 
